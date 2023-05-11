@@ -1,16 +1,19 @@
-package com.example.hoaxify.model;
+package com.example.hoaxify.dto;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import com.example.hoaxify.annotation.UniqueUserNameConstraint;
+import jakarta.validation.constraints.*;
 
-@Entity(name = "Hoxify_User")
-public class User {
-    @Id
-    @GeneratedValue
+public class UserDto {
     private Long id;
+    @NotNull(message = "{hoaxify.com.validation.userName}")
+    @Size(min = 4, max = 255, message = "{hoaxify.com.validation.userName.size}")
+    @UniqueUserNameConstraint
     private String userName;
+    @NotNull(message = "{hoaxify.com.validation.dipalyName}")
+    @Size(min = 4, max = 255, message = "{hoaxify.com.validation.disaplyName.size}")
     private String dispalyName;
+    @Size(min = 4, max = 255, message = "{hoaxify.com.validation.email.size}")
+    @Email
     private String password;
 
     public Long getId() {

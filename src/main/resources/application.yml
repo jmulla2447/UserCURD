@@ -1,1 +1,11 @@
-
+spring:
+  h2:
+    console:
+      enabled: true
+      path : /h2-console
+  jpa:
+    properties:
+      javax:
+        persistent:
+          validation:
+            mode: none

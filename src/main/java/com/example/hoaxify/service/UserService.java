@@ -1,5 +1,7 @@
 package com.example.hoaxify.service;
 
+import com.example.hoaxify.dto.UserDto;
+import com.example.hoaxify.mapping.UserMapper;
 import com.example.hoaxify.model.User;
 import com.example.hoaxify.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +21,11 @@ public class UserService {
         this.passwordEncoder =  passwordEncoder;
     }
 
-    public User createUser(User user){
+    public UserDto createUser(UserDto userDto){
+        User user = UserMapper.USER_MAPPER.dtoToEntity(userDto);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
+        UserDto saveUser =  UserMapper.USER_MAPPER.entityToDto(userRepository.save(user));
+        saveUser.setPassword(null);
+        return saveUser;
     }
 }

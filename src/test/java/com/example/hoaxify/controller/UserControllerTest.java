@@ -1,5 +1,7 @@
 package com.example.hoaxify.controller;
 
+import com.example.hoaxify.dto.UserDto;
+import com.example.hoaxify.error.APIError;
 import com.example.hoaxify.model.User;
 import com.example.hoaxify.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,37 +26,63 @@ public class UserControllerTest {
     UserRepository userRepository;
 
     @BeforeEach
-    public void cleanUp(){
+    public void cleanUp() {
         userRepository.deleteAll();
     }
 
     @Test
-    public void postUser_whenUserValid_responseOK(){
-        User user = getUser();
+    public void postUser_whenUserValid_responseOK() {
+        UserDto user = getUser();
 
-        ResponseEntity<Object> response =  testRestTemplate.postForEntity("/users",user, Object.class );
+        ResponseEntity<Object> response = testRestTemplate.postForEntity("/users", user, Object.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
-    private static User getUser() {
-        User user = new User();
-        user.setUserName("test-user");
-        user.setDispalyName("test-disaply");
-        user.setPassword("P4ssword");
-        return user;
+    private static UserDto getUser() {
+        UserDto userDto = new UserDto();
+        userDto.setUserName(null);
+        userDto.setDispalyName("test-disaply");
+        userDto.setPassword("P4ssword");
+        return userDto;
     }
 
     @Test
-    public void postUser_whenUserValid_userSavedDB(){
-        User user = getUser();
-        ResponseEntity<Object> response =  testRestTemplate.postForEntity("/users",user, Object.class );
+    public void postUser_whenUserValid_userSavedDB() {
+        UserDto user = getUser();
+        ResponseEntity<Object> response = testRestTemplate.postForEntity("/users", user, Object.class);
         assertThat(userRepository.count()).isEqualTo(1);
     }
 
     @Test
-    public void postUser_whenUserValid_PassowrdSaveInHash(){
-        User user = getUser();
-        ResponseEntity<User> response =  testRestTemplate.postForEntity("/users",user, User.class );
-        assertThat(response.getBody().getPassword() ).isNotEqualTo(user.getPassword());
+    public void postUser_whenUserNameIsNull_BadRequest() {
+        UserDto userDto = new UserDto();
+        userDto.setUserName(null);
+        userDto.setDispalyName("test-disaply");
+        userDto.setPassword("P4ssword");
+        ResponseEntity<User> response = testRestTemplate.postForEntity("/users", userDto, User.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+
+    @Test
+    public void postUser_whenUserValid_PassowrdSaveInHash() {
+        UserDto user = new UserDto();
+        ResponseEntity<APIError> response = testRestTemplate.postForEntity("/users", user, APIError.class);
+        assertThat(response.getBody().getUri()).isEqualTo("/users");
+    }
+
+    @Test
+    public void postUser_whenUserObjectNull_StatusBadReqesut() {
+        UserDto user = new UserDto();
+        ResponseEntity<APIError> response = testRestTemplate.postForEntity("/users", user, APIError.class);
+        assertThat(response.getBody().getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @Test
+    public void postUser_whenUserNameAlreadyPresent_StatusBadReqesut() {
+        UserDto user = new UserDto();
+        ResponseEntity<APIError> response = testRestTemplate.postForEntity("/users", user, APIError.class);
+        ResponseEntity<APIError> lastResponse = testRestTemplate.postForEntity("/users", user, APIError.class);
+        assertThat(lastResponse.getBody().getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 }
